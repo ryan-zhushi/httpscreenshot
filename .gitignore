@@ -1,0 +1,7 @@
+venv/
+*.log
+urls.txt
+.DS_Store
+.idea/
+pics/
+index.html
