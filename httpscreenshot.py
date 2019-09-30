@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 #
+import threading
 from datetime import datetime
 import time
 import os.path
+import shutil
 import multiprocessing as mp
 from selenium import webdriver
 
@@ -52,6 +54,8 @@ def readtxt():
         lines = f.readlines()
     urls = []
     for line in lines:
+        if line.startswith('#'):
+            continue
         try:
             thelist = line.strip().split(",")
             if len(thelist) == 3 and thelist[1] and thelist[2]:
@@ -64,12 +68,13 @@ def readtxt():
 def get_dir():
     """判断文件夹是否存在，如果不存在就创建一个"""
     filename = "pics"
-    if not os.path.isdir(filename):
-        os.makedirs(filename)
+    if os.path.isdir(filename):
+        shutil.rmtree(filename)
+    os.makedirs(filename)
     return filename
 
 
-def webshot(tup):
+def webshot(picname, link):
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--disable-gpu')
@@ -77,9 +82,7 @@ def webshot(tup):
     driver.maximize_window()
     # 返回网页的高度的js代码
     js_height = "return document.body.clientHeight"
-    picname = str(tup[0])
 
-    link = tup[1]
     try:
         driver.get(link)
         k = 1
@@ -113,6 +116,8 @@ def index_page_gen(updated_time):
         with open('urls.txt', 'r', encoding='utf-8') as f:
             lines = f.readlines()
         for line in lines:
+            if line.startswith('#'):
+                continue
             try:
                 thelist = line.strip().split(",")
                 if len(thelist) == 3:
@@ -126,9 +131,14 @@ if __name__ == '__main__':
     t = time.time()
     get_dir()
     urls = readtxt()
-    pool = mp.Pool(processes=10)
-    pool.map_async(func=webshot, iterable=urls)
-    pool.close()
-    pool.join()
+    threads = []
+    for url in urls:
+        thread = threading.Thread(target=webshot, args=url)
+        threads.append(thread)
+    for i in range(len(urls)):
+        threads[i].start()
+    for i in range(len(urls)):
+        threads[i].join()
+
     print("操作结束，耗时：{:.2f}秒".format(float(time.time() - t)))
     index_page_gen(datetime.now())
