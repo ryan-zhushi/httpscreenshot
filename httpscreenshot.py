@@ -8,14 +8,14 @@ import multiprocessing as mp
 
 def readtxt():
     """读取txt文件，返回一个列表，每个元素都是一个元组;文件的格式是图片保存的名称加英文逗号加网页地址"""
-    with open('urls.txt', 'r') as f:
+    with open('urls.txt', 'r', encoding='utf-8') as f:
         lines = f.readlines()
     urls = []
     for line in lines:
         try:
             thelist = line.strip().split(",")
-            if len(thelist) == 2 and thelist[0] and thelist[1]:
-                urls.append((thelist[0], thelist[1]))
+            if len(thelist) == 3 and thelist[1] and thelist[2]:
+                urls.append((thelist[1], thelist[2]))
         except:
             pass
     return urls
@@ -62,7 +62,9 @@ def webshot(tup):
         time.sleep(0.1)
     except Exception as e:
         print(picname, e)
+        driver.quit()
     driver.close()
+    driver.quit()
 
 
 if __name__ == '__main__':
