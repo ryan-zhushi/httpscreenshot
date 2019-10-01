@@ -4,8 +4,6 @@ import threading
 from datetime import datetime
 import time
 import os.path
-import shutil
-import multiprocessing as mp
 from selenium import webdriver
 
 
@@ -16,33 +14,37 @@ HTML_HEAD = '''\
     <title>Web Application Catalog</title>
     <link href="style.css" rel="stylesheet" type="text/css">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta http-equiv="Refresh" content="60" ;/>
+    <meta http-equiv="Refresh" content="40" ;/>
 </head>
 
 <body>
+<div>
 '''
 
 HTML_TABLE = '''
-<div class="table">
-    <table class="table-fill">
-        <thead>
-        <TR>
-            <th class="text-left">
-                {title}
-            </th>
-        </TR>
-        </thead>
-        <TR>
-            <TD><a href="{href}" target="_blank"><img src="pics/{pic_name}.png" width=150 height=150/></a></TD>
-        </TR>
-    </table>
-</div>
+    <div class="table">
+        <table class="table-fill">
+            <thead>
+            <TR>
+                <th class="text-left">
+                    {title}
+                </th>
+            </TR>
+            </thead>
+            <TR>
+                <TD><a href="{href}" target="_blank"><img src="pics/{pic_name}.png" width=150 height=150/></a></TD>
+            </TR>
+        </table>
+    </div>
 '''
 
 HTML_FOOTER = '''
-<span class="footer">
-    {screenshot_updated_time}
-</span>
+    <div class="clearfix"></div>
+</div>
+
+<div class="footer">
+    更新时间：{screenshot_updated_time}
+</div>
 </body>
 </html>
 '''
@@ -68,9 +70,8 @@ def readtxt():
 def get_dir():
     """判断文件夹是否存在，如果不存在就创建一个"""
     filename = "pics"
-    if os.path.isdir(filename):
-        shutil.rmtree(filename)
-    os.makedirs(filename)
+    if not os.path.isdir(filename):
+        os.makedirs(filename)
     return filename
 
 
@@ -128,17 +129,19 @@ def index_page_gen(updated_time):
 
 
 if __name__ == '__main__':
-    t = time.time()
     get_dir()
     urls = readtxt()
-    threads = []
-    for url in urls:
-        thread = threading.Thread(target=webshot, args=url)
-        threads.append(thread)
-    for i in range(len(urls)):
-        threads[i].start()
-    for i in range(len(urls)):
-        threads[i].join()
+    while True:
+        t = time.time()
+        threads = []
+        for url in urls:
+            thread = threading.Thread(target=webshot, args=url)
+            threads.append(thread)
+        for i in range(len(urls)):
+            threads[i].start()
+        for i in range(len(urls)):
+            threads[i].join()
 
-    print("操作结束，耗时：{:.2f}秒".format(float(time.time() - t)))
-    index_page_gen(datetime.now())
+        print("Timing:{:.2f} secs".format(float(time.time() - t)))
+        index_page_gen(datetime.now())
+        time.sleep(40)
