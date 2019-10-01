@@ -8,4 +8,4 @@
 
 4、执行python httpscreenshot.py。
 
-*支持Docker部署，但是Docker环境下，脚本会因网络问题崩溃，原因不明。
+注：支持Docker部署，但是Docker环境下，脚本会因网络问题崩溃，原因不明，暂不能使用。
